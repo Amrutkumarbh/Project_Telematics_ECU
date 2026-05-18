@@ -31,14 +31,14 @@ The following eight ECUs form the complete vehicle simulation network. All commu
 
 | # | ECU Name | Responsible For | Platform | CAN Node ID |
 |---|----------|-----------------|----------|-------------|
-| 1 | Engine Management ECU | Engine RPM simulation, temperature | STM32F407VG | `0x100` |
-| 2 | Transmission ECU | Gear selection, torque converter, shift logic | STM32F407VG | `0x200` |
-| 3 | ABS ECU | Wheel speed, slip ratio, brake modulation, distance, temperature | STM32F407VG | `0x300` |
-| 4 | Body Control Module (BCM) | Lights, wipers, doors, central locking | STM32F407VG | `0x400` |
-| 5 | Infotainment ECU | Display of speed, RPM, ABS status, temperature | STM32F407VG | `0x500` |
-| 6 | Battery Management System (BMS) | Battery voltage, SoC, charge control | STM32F407VG | `0x600` |
-| 7 | **Telematics ECU (This Document)** | GPS, over-the-air data, remote monitoring, immobilizer, crash alerts | STM32F407VG + ESP32 | `0x700` |
-| 8 | Airbag ECU | Crash detection, airbag deployment trigger, seatbelt pretensioner | STM32F407VG | `0x800` |
+| 1 | Engine Management ECU | Engine RPM simulation, temperature | STM32F407VG | `0x103` |
+| 2 | Transmission ECU | Gear selection, torque converter, shift logic | STM32F407VG | `0x104` |
+| 3 | ABS ECU | Wheel speed, slip ratio, brake modulation, distance, temperature | STM32F407VG | `0x102` |
+| 4 | Body Control Module (BCM) | Lights, wipers, doors, central locking | STM32F407VG | `0x106` |
+| 5 | Infotainment ECU | Display of speed, RPM, ABS status, temperature | STM32F407VG | `0x108` |
+| 6 | Battery Management System (BMS) | Battery voltage, SoC, charge control | STM32F407VG | `0x105` |
+| 7 | **Telematics ECU (This Document)** | GPS, over-the-air data, remote monitoring, immobilizer, crash alerts | STM32F407VG + ESP32 | `0x107` |
+| 8 | Airbag ECU | Crash detection, airbag deployment trigger, seatbelt pretensioner | STM32F407VG | `0x100` |
 
 #### Figure 1 — System-Level ECU Network Block Diagram
 
@@ -47,7 +47,7 @@ The following eight ECUs form the complete vehicle simulation network. All commu
   ┌────────┐  ┌──────────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐
   │ Engine │  │Transmission  │  │  ABS   │  │  BCM   │  │Infotain│  │  BMS   │  │TELEMA- │  │ Airbag │
   │  ECU   │  │    ECU       │  │  ECU   │  │  ECU   │  │  ECU   │  │  ECU   │  │ TICS ⭐│  │  ECU   │
-  │ 0x100  │  │   0x200      │  │ 0x300  │  │ 0x400  │  │ 0x500  │  │ 0x600  │  │ 0x700  │  │ 0x800  │
+  │ 0x103  │  │   0x104      │  │ 0x102  │  │ 0x106  │  │ 0x108  │  │ 0x105  │  │ 0x107  │  │ 0x100  │
   └───┬────┘  └──────┬───────┘  └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘
       │              │              │            │            │            │            │            │
 ══════╪══════════════╪══════════════╪════════════╪════════════╪════════════╪════════════╪════════════╪══════
@@ -293,21 +293,21 @@ GND  ───────────────── GND                ─�
 
 | CAN ID | Source ECU | Content | Telematics Action |
 |--------|------------|---------|-------------------|
-| `0x100–0x109` | Engine ECU | Engine RPM, coolant temp, throttle | Package into telemetry JSON; monitor for over-RPM |
-| `0x300–0x309` | ABS ECU | Wheel speed, slip ratio, brake temp | Include in telemetry; correlate with crash events |
-| `0x321` | Airbag ECU | Crash flag, severity (Major/Minor) | Trigger GSM eCall + ThingsBoard crash alert immediately |
-| `0x400–0x409` | BCM ECU | Door/lock state, lights status | Include in vehicle state snapshot |
-| `0x500–0x509` | Infotainment ECU | Driver speed setting, ambient temp | Log for fleet analytics |
-| `0x530` | BMS ECU | Battery voltage, SoC | Report battery health to cloud dashboard |
-| `0x510` | Engine ECU | DTC fault code, fault source byte | Store to W25Q64 flash; forward to ThingsBoard fault telemetry |
+| `0x103` | Engine ECU | Engine RPM, coolant temp, throttle | Package into telemetry JSON; monitor for over-RPM |
+| `0x102` | ABS ECU | Wheel speed, slip ratio, brake temp | Include in telemetry; correlate with crash events |
+| `0x100` | Airbag ECU | Crash flag, severity (Major/Minor) | Trigger GSM eCall + ThingsBoard crash alert immediately |
+| `0x106` | BCM ECU | Door/lock state, lights status | Include in vehicle state snapshot |
+| `0x108` | Infotainment ECU | Driver speed setting, ambient temp | Log for fleet analytics |
+| `0x107` | BMS ECU | Battery voltage, SoC | Report battery health to cloud dashboard |
+| `0x103` | Engine ECU | DTC fault code, fault source byte | Store to W25Q64 flash; forward to ThingsBoard fault telemetry |
 
 ### 4.3 CAN Message Map — Telematics ECU Transmits
 
 | CAN ID | Frame Name | Byte Layout | Frequency | Recipients |
 |--------|------------|-------------|-----------|------------|
-| `0x450` | IMMOB_COMMAND | B0: `0xAA`=immobilize / `0x55`=clear; B1: auth token; B2-7: zeros | On command only | Engine ECU |
-| `0x700` | TELEM_HEARTBEAT | B0: system state; B1: cloud connection status (0=OK, 1=lost) | 1 second | All ECUs |
-| `0x701` | TELEM_STATUS | B0: crash processed flag; B1: immob state; B2: fault count | 500 ms | Infotainment, BMS |
+| `0x105` | IMMOB_COMMAND | B0: `0xAA`=immobilize / `0x55`=clear; B1: auth token; B2-7: zeros | On command only | BMS ECU |
+| `0x10X` | TELEM_HEARTBEAT | B0: system state; B1: cloud connection status (0=OK, 1=lost) | 1 second | All ECUs |
+| `0x108` | TELEM_STATUS | B0: crash processed flag; B1: immob state; B2: fault count | 500 ms | Infotainment, BMS |
 
 ### 4.4 CAN Frame Structure and Timing
 
@@ -331,21 +331,21 @@ Standard 11-bit CAN data frame structure (used at 500 kbps):
 
 ---
 
-## 5. ThingsBoard Cloud Platform Integration
+## 5. Render Cloud Platform Integration
 
 ### 5.1 Architecture Overview
 
 The ESP32 acts as an MQTT client connecting to ThingsBoard Cloud over MQTT on port 1883 (or TLS 8883). ThingsBoard receives telemetry, processes it through the Rule Chain Engine, raises alarms, and manages real-time dashboards.
 
-#### Figure 5 — ThingsBoard Cloud Integration Architecture
+#### Figure 5 — Render Cloud Integration Architecture
 
 ```
   ┌────────────────────────────────────┐        ┌────────────────────────────────────────┐
-  │        Vehicle Hardware            │        │    ThingsBoard Cloud (thingsboard.cloud)│
+  │        Vehicle Hardware            │        │    Render Cloud (thingsboard.cloud)│
   │                                    │        │                                        │
   │  ┌──────────────┐                  │        │  ┌────────────┐   ┌────────────────┐  │
   │  │  CAN Bus ECUs│                  │        │  │MQTT Broker │──►│  Rule Chain    │  │
-  │  │  0x100–0x800 │                  │        │  │(Auth Token)│   │  Engine        │  │
+  │  │  0x100–0x108 │                  │        │  │(Auth Token)│   │  Engine        │  │
   │  └──────┬───────┘                  │        │  └────────────┘   └───┬────────────┘  │
   │         │ CAN 500kbps              │        │                        │               │
   │  ┌──────▼───────┐  UART 115200     │        │          ┌─────────────┼────────────┐  │
@@ -363,77 +363,168 @@ The ESP32 acts as an MQTT client connecting to ThingsBoard Cloud over MQTT on po
   │  │  SMS Alerts  │                  │        │  └─────────────────────────────────┘  │
   │  └──────────────┘                  │        └────────────────────────────────────────┘
   └────────────────────────────────────┘
+
+```text
+ESP32 (MQTT Client)
+     │
+     │ MQTT — Port 1883 (plaintext) / 8883 (TLS)
+     ▼
+Render Cloud Platform Server (render.com)
+     │
+     ├──► Backend Event Processing Service Engine
+     │         (process telemetry; raise alarms)
+     │
+     │         ├──► Render-hosted Web Dashboard
+     │         │         (real-time vehicle monitoring widgets)
+     │         │
+     │         ├──► Alarm Manager
+     │         │         (crash alerts; low battery; fault notifications)
+     │         │
+     │         └──► RPC Service
+     │                   (remote immobilization commands to ESP32)
+     │
+     └──► Cloud Database State Storage
+               (last known vehicle state; persists when device offline)
 ```
-
-### 5.2 MQTT Topics
-
-| Topic | Direction | Purpose |
-|-------|-----------|---------|
-| `v1/devices/me/telemetry` | ESP32 → TB | Vehicle telemetry (speed, RPM, battery, faults) every 5 s |
-| `v1/devices/me/attributes` | ESP32 → TB | Client attribute update (immob_status, crash_flag, fault_count) |
-| `v1/devices/me/rpc/request/+` | TB → ESP32 | Server-side RPC commands (immobilize, clear, OTA trigger) |
-| `v1/devices/me/rpc/response/{requestId}` | ESP32 → TB | RPC response / acknowledgment sent back to ThingsBoard |
-| `v1/devices/me/attributes/response/+` | TB → ESP32 | Shared attribute delta notifications from ThingsBoard server |
-
-### 5.3 ThingsBoard Setup — Step by Step
-
-**Step 1 — Create a Device**
-
-In ThingsBoard → Entities → Devices → Add Device
-
-```
-Device Name:    Telematics_ECU_VH001
-Device Profile: Vehicle_Telematics
-Label:          VH001
-```
-
-**Step 2 — Get Access Token (MQTT Authentication)**
-
-In ThingsBoard → Device → Manage Credentials → Copy Access Token (e.g., `A1B2C3D4E5F6G7H8`). No TLS certificates needed — embed the access token as the MQTT username in ESP32 firmware. Password field left blank.
-
-**Step 3 — Configure Rule Chain for Crash Alert**
-
-In ThingsBoard → Rule Chains → Root Rule Chain:
-
-1. Add Rule Node: `Message Type Filter` (type: `POST_TELEMETRY_REQUEST`)
-2. Link to `Script` node: check `crash_status == 1`
-3. On match → `Create Alarm` node (Severity: `CRITICAL`, Type: `VEHICLE_CRASH`)
-4. Connect Alarm node to `Send Email` or `REST API Call` node for SMS notification
-
-**Step 4 — Create Dashboard**
-
-In ThingsBoard → Dashboards → Add Dashboard. Add widgets:
-- Time-series line chart (speed, RPM)
-- Radial Gauge (battery SoC)
-- Boolean indicator (immob_status)
-- Alarm Widget (VEHICLE_CRASH events)
-- Value Card (fault_count)
-
-Bind all widgets to device `Telematics_ECU_VH001` telemetry keys.
-
-### 5.4 ThingsBoard RPC — Remote Immobilization Flow
-
-ThingsBoard uses Server-side RPC to send commands to the ESP32. RPC is a direct request-response mechanism — ThingsBoard delivers the command payload and waits for an acknowledgment.
-
-**RPC Payload from ThingsBoard → ESP32:**
-
-```json
-{"method": "immobilize", "params": {"action": "enable", "token": "0xAB"}}
-```
-
-**Flow:**
-
-1. Fleet manager clicks **Immobilize** button on ThingsBoard Dashboard
-2. ThingsBoard sends RPC request to ESP32 via: `v1/devices/me/rpc/request/{id}`
-3. ESP32 checks vehicle speed < 10 km/h (safety gate)
-4. ESP32 sends UART: `"CMD:IMMOB:AB\n"` to STM32
-5. STM32 validates token → sends CAN ID=`0x450` to Engine ECU
-6. Engine ECU disables ignition → ACK on CAN ID=`0x100`
-7. STM32 confirms → ESP32 publishes RPC response to: `v1/devices/me/rpc/response/{id}`
-8. ESP32 updates client attribute: `immob_status=true` → Dashboard: **VH001 — IMMOBILIZED ✓**
 
 ---
 
+## 5.2 MQTT Topics
+
+| Topic | Direction | Purpose |
+|------|------|------|
+| `v1/devices/me/telemetry` | ESP32 → Render | Vehicle telemetry (speed, RPM, battery, faults) every 5 seconds |
+| `v1/devices/me/attributes` | ESP32 → Render | Client attribute update (`immob_status`, `crash_flag`, `fault_count`) |
+| `v1/devices/me/rpc/request/+` | Render → ESP32 | REST API command handling commands (`immobilize`, `clear`, `OTA trigger`) |
+| `v1/devices/me/rpc/response/{requestId}` | ESP32 → Render | RPC response / acknowledgment sent back to Render |
+| `v1/devices/me/attributes/response/+` | Render → ESP32 | Shared attribute delta notifications from Render server |
+
+---
+
+## 5.3 Render Setup — Step by Step
+
+### Step 1 — Create a Device
+
+In Render → Entities → Devices → Add Device
+
+- **Device Name:** `Telematics_ECU_VH001`
+- **Device Profile:** `Vehicle_Telematics`
+- **Label:** `VH001`
+
+---
+
+### Step 2 — Get Access Token (MQTT Authentication)
+
+In Render → Device → Manage Credentials → Copy Access Token  
+(example: `A1B2C3D4E5F6G7H8`)
+
+No TLS certificates are needed — embed the access token as the MQTT username in ESP32 firmware. Password field is left blank.
+
+---
+
+### Step 3 — Configure Backend Event Processing Service for Crash Alert
+
+In Render → Backend Event Processing Services → Root Backend Event Processing Service
+
+Add Rule Node:
+
+- `"Message Type Filter"`  
+  (`type: POST_TELEMETRY_REQUEST`)
+
+Link to `"Script"` node:
+
+```js
+check crash_status == 1
+```
+
+On match:
+
+- Trigger `"Create Alarm"` node
+  - **Severity:** `CRITICAL`
+  - **Type:** `VEHICLE_CRASH`
+
+Connect Alarm node to:
+
+- `"Send Email"` or
+- `"REST API Call"` node
+
+for SMS notification.
+
+---
+
+### Step 4 — Create Render-hosted Web Dashboard
+
+In Render → Render-hosted Web Dashboards → Add Render-hosted Web Dashboard
+
+Add the following widgets:
+
+- Time-series line chart (`speed`, `RPM`)
+- Radial Gauge (`battery SoC`)
+- Boolean indicator (`immob_status`)
+- Alarm Widget (`VEHICLE_CRASH` events)
+- Value Card (`fault_count`)
+
+Bind all widgets to device `Telematics_ECU_VH001` telemetry keys.
+
+---
+
+## 5.4 Render RPC — Remote Immobilization Flow
+
+Render uses REST API command handling (Remote Procedure Calls) to send commands to the ESP32. Unlike AWS Device Shadow, RPC is a direct request-response mechanism — Render delivers the command payload and waits for an acknowledgment from the device before updating the dashboard state.
+
+### RPC Payload from Render → ESP32
+
+```json
+{
+  "method": "immobilize",
+  "params": {
+    "action": "enable",
+    "token": "0xAB"
+  }
+}
+```
+
+---
+
+### Flow
+
+1. Fleet manager clicks **Immobilize** button on Render-hosted Web Dashboard
+
+2. Render sends RPC request to ESP32 via:
+
+```text
+v1/devices/me/rpc/request/{id}
+```
+
+3. ESP32 checks vehicle speed `< 10 km/h` (safety gate)
+
+4. ESP32 sends UART command to STM32:
+
+```text
+CMD:IMMOB:AB\n
+```
+
+5. STM32 validates token → sends CAN ID=`0x450` to Engine ECU
+
+6. Engine ECU disables ignition → ACK on CAN ID=`0x100`
+
+7. STM32 confirms → ESP32 publishes RPC response to:
+
+```text
+v1/devices/me/rpc/response/{id}
+```
+
+8. ESP32 updates client attribute:
+
+```text
+immob_status=true
+```
+
+Dashboard Status:
+
+```text
+VH001 — IMMOBILIZED ✓
+```
 ## 6. Software Architecture (FreeRTOS)
 
 ### 6.1 FreeRTOS Task Architecture
@@ -487,10 +578,10 @@ Interrupts (ISR → queue wakeup):
 | `#define` Constant | Value | Meaning |
 |--------------------|-------|---------|
 | `CAN_SPEED_KBPS` | 500 | CAN bus speed in kbps |
-| `CAN_ID_TELEMATICS` | 0x700 | This ECU's CAN heartbeat node ID |
-| `CAN_ID_IMMOB` | 0x450 | Immobilization command sent to Engine ECU |
-| `CAN_ID_CRASH` | 0x321 | Crash frame received from Airbag ECU |
-| `CAN_ID_ENGINE` | 0x100 | Engine ECU base CAN ID |
+| `CAN_ID_TELEMATICS` | 0x107 | This ECU's CAN heartbeat node ID |
+| `CAN_ID_IMMOB` | 0x103 | Immobilization command sent to BMS ECU |
+| `CAN_ID_CRASH` | 0x100 | Crash frame received from Airbag ECU |
+| `CAN_ID_ENGINE` | 0x103 | Engine ECU base CAN ID |
 | `IMMOB_SPEED_LIMIT` | 10 | Maximum vehicle speed (km/h) to allow immobilization |
 | `CRASH_DEBOUNCE_FRAMES` | 3 | Crash flag must persist N frames before acting |
 | `CLOUD_TX_PERIOD_MS` | 5000 | Telemetry publish period (5 seconds) |
@@ -514,7 +605,7 @@ Interrupts (ISR → queue wakeup):
 ```
   Airbag ECU                STM32F407VG                  ESP32           ThingsBoard
       │                          │                          │                  │
-      │  CAN 0x321               │                          │                  │
+      │  CAN 0x100               │                          │                  │
       │  [0x02, 0x01] MAJOR      │                          │                  │
       ├─────────────────────────►│                          │                  │
       │                          │ bxCAN ISR fires          │                  │
@@ -547,9 +638,9 @@ End-to-end trace of a crash event:
 
 | Step | Action | Detail |
 |------|--------|--------|
-| 1 | Airbag ECU sends CAN frame | CAN ID=`0x321`, Data=`[0x02, 0x01]` (severity=Major, flag=Confirmed) |
+| 1 | Airbag ECU sends CAN frame | CAN ID=`0x100`, Data=`[0x02, 0x01]` (severity=Major, flag=Confirmed) |
 | 2 | STM32 bxCAN ISR fires | `HAL_CAN_RxFifo0MsgPendingCallback()`; frame stored in CAN RX ring buffer |
-| 3 | CAN_RxTask processes frame | Identifies ID=`0x321`; calls `CrashManager_HandleEvent()` |
+| 3 | CAN_RxTask processes frame | Identifies ID=`0x100`; calls `CrashManager_HandleEvent()` |
 | 4 | CrashManager logs to RAM | `CrashEvent.severity=2`, `.timestamp=92450ms`, `.crash_flag=1` |
 | 5 | GSM_Task sends AT commands | UART2: `AT+CMGS="+911"` → `"Crash: VH001, MAJOR, 92450ms"` |
 | 6 | STM32 builds JSON → UART1 → ESP32 | `{"vehicle_id":"VH001","crash":1,"severity":2,"ts":92450}` |
@@ -598,8 +689,8 @@ ThingsBoard          ESP32               STM32F407VG        CAN Bus        Engin
 | 2 | ThingsBoard delivers RPC to ESP32 | Topic: `v1/devices/me/rpc/request/{id}` |
 | 3 | ESP32 checks vehicle speed | Requests speed from STM32 via UART; STM32 responds: `{"speed":8}` (safe) |
 | 4 | ESP32 sends UART to STM32 | `"CMD:IMMOB:AB\n"` |
-| 5 | STM32 validates token | Security Manager verifies `0xAB`; sends CAN ID=`0x450`, Data=`[0xAA,0xAB,...]` |
-| 6 | Engine ECU receives `0x450` | Disables ignition relay; ACK on CAN ID=`0x100`, Byte0=`0xFF` (engine_off) |
+| 5 | STM32 validates token | Security Manager verifies `0xAB`; sends CAN ID=`0x103`, Data=`[0xAA,0xAB,...]` |
+| 6 | Engine ECU receives `0x103` | Disables ignition relay; ACK on CAN ID=`0x100`, Byte0=`0xFF` (engine_off) |
 | 7 | STM32 confirms → ESP32 | `{"immob_status":"confirmed","token":"0xAB"}` |
 | 8 | ESP32 updates client attribute | `immob_status=true`; Dashboard: **VH001 — IMMOBILIZED ✓** |
 
@@ -622,10 +713,10 @@ ThingsBoard          ESP32               STM32F407VG        CAN Bus        Engin
 
 | Receiving ECU | Data Provided by Telematics | CAN Frame |
 |---------------|----------------------------|-----------|
-| Engine ECU | Immobilization/mobilization command with auth token | `0x450` |
-| All ECUs | Telematics heartbeat (system alive, cloud status) | `0x700` |
-| Infotainment ECU | Cloud connectivity status; remote command acknowledgment | `0x701` |
-| BMS ECU | Remote diagnostic request acknowledgment | `0x701` |
+| Engine ECU | Immobilization/mobilization command with auth token | `0x103` |
+| All ECUs | Telematics heartbeat (system alive, cloud status) | `0x10X` |
+| Infotainment ECU | Cloud connectivity status; remote command acknowledgment | `0x108` |
+| BMS ECU | Remote diagnostic request acknowledgment | `0x105` |
 
 ### 8.2 What the Telematics ECU Receives from Each Other ECU
 
