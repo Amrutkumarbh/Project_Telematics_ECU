@@ -246,21 +246,21 @@ GND  ───────────────── GND                ─�
 
 | CAN ID | Source ECU | Content | Telematics Action |
 |--------|------------|---------|-------------------|
-| `0x100`–`0x109` | Engine ECU | Engine RPM, coolant temp, throttle | Package into telemetry JSON; monitor for over-RPM |
-| `0x300`–`0x309` | ABS ECU | Wheel speed, slip ratio, brake temp | Include in telemetry; correlate with crash events |
-| `0x321` | Airbag ECU | Crash flag, severity (Major/Minor) | Trigger GSM eCall + ThingsBoard crash alert immediately |
-| `0x400`–`0x409` | BCM ECU | Door/lock state, lights status | Include in vehicle state snapshot |
-| `0x500`–`0x509` | Infotainment ECU | Driver speed setting, ambient temp | Log for fleet analytics |
-| `0x530` | BMS ECU | Battery voltage, SoC | Report battery health to cloud dashboard |
-| `0x510` | Engine ECU | DTC fault code, fault source byte | Store to W25Q64 flash; forward to ThingsBoard |
+| `0x103` | Engine ECU | Engine RPM, coolant temp, throttle | Package into telemetry JSON; monitor for over-RPM |
+| `0x101` | ABS ECU | Wheel speed, slip ratio, brake temp | Include in telemetry; correlate with crash events |
+| `0x100` | Airbag ECU | Crash flag, severity (Major/Minor) | Trigger GSM eCall + ThingsBoard crash alert immediately |
+| `0x106` | BCM ECU | Door/lock state, lights status | Include in vehicle state snapshot |
+| `0x108` | Infotainment ECU | Driver speed setting, ambient temp | Log for fleet analytics |
+| `0x105` | BMS ECU | Battery voltage, SoC | Report battery health to cloud dashboard |
+| `0x103` | Engine ECU | DTC fault code, fault source byte | Store to W25Q64 flash; forward to ThingsBoard |
 
 ### 4.3 CAN Message Map — Telematics ECU Transmits
 
 | CAN ID | Frame Name | Byte Layout | Frequency | Recipients |
 |--------|------------|-------------|-----------|------------|
-| `0x450` | IMMOB_COMMAND | B0: `0xAA`=immobilize / `0x55`=clear; B1: auth token; B2–7: zeros | On command only | Engine ECU |
-| `0x700` | TELEM_HEARTBEAT | B0: system state; B1: cloud connection status (`0`=OK, `1`=lost) | 1 second | All ECUs |
-| `0x701` | TELEM_STATUS | B0: crash processed flag; B1: immob state; B2: fault count | 500 ms | Infotainment, BMS |
+| `0x103` | IMMOB_COMMAND | B0: `0xAA`=immobilize / `0x55`=clear; B1: auth token; B2–7: zeros | On command only | Engine ECU |
+| `0x10X` | TELEM_HEARTBEAT | B0: system state; B1: cloud connection status (`0`=OK, `1`=lost) | 1 second | All ECUs |
+| `0x108` | TELEM_STATUS | B0: crash processed flag; B1: immob state; B2: fault count | 500 ms | Infotainment, BMS |
 
 ### 4.4 CAN Frame Structure and Timing
 
@@ -269,7 +269,7 @@ Standard 11-bit CAN data frame at 500 kbps:
 | Field | Bits | Telematics Note |
 |-------|------|-----------------|
 | SOF (Start of Frame) | 1 | Dominant bit — marks start of frame |
-| Arbitration ID | 11 | CAN ID `0x700` (Telematics ECU node) |
+| Arbitration ID | 11 | CAN ID `0x107` (Telematics ECU node) |
 | RTR bit | 1 | `0` = data frame; `1` = remote frame (not used) |
 | IDE bit | 1 | `0` = standard frame (11-bit ID) |
 | r0 (reserved) | 1 | Must be dominant (0) |
