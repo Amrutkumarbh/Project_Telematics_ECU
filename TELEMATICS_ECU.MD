@@ -1,4 +1,5 @@
 # Telematics ECU — Design Document
+# Id : 0x107
 
 **Platform:** STM32F407VG Discovery Board · ESP32 · ThingsBoard Cloud · CAN Bus · GSM
 
@@ -31,14 +32,14 @@ All ECUs communicate over a shared CAN bus at **500 kbps**.
 
 | # | ECU Name | Responsible For | Platform | CAN Node ID |
 |---|----------|-----------------|----------|-------------|
-| 1 | Engine Management ECU | Engine RPM simulation, temperature | STM32F407VG | `0x100` |
-| 2 | Transmission ECU | Gear selection, torque converter, shift logic | STM32F407VG | `0x200` |
-| 3 | ABS ECU | Wheel speed, slip ratio, brake modulation, distance, temperature | STM32F407VG | `0x300` |
-| 4 | Body Control Module (BCM) | Lights, wipers, doors, central locking | STM32F407VG | `0x400` |
-| 5 | Infotainment ECU | Display of speed, RPM, ABS status, temperature | STM32F407VG | `0x500` |
-| 6 | Battery Management System (BMS) | Battery voltage, SoC, charge control | STM32F407VG | `0x600` |
+| 1 | Engine Management ECU | Engine RPM simulation, temperature | STM32F407VG | `0x103` |
+| 2 | Transmission ECU | Gear selection, torque converter, shift logic | STM32F407VG | `0x104` |
+| 3 | ABS ECU | Wheel speed, slip ratio, brake modulation, distance, temperature | STM32F407VG | `0x101` |
+| 4 | Body Control Module (BCM) | Lights, wipers, doors, central locking | STM32F407VG | `0x106` |
+| 5 | Infotainment ECU | Display of speed, RPM, ABS status, temperature | STM32F407VG | `0x108` |
+| 6 | Battery Management System (BMS) | Battery voltage, SoC, charge control | STM32F407VG | `0x105` |
 | 7 | **Telematics ECU** *(This Document)* | GPS, over-the-air data, remote monitoring, immobilizer, crash alerts | STM32F407VG + ESP32 | `0x700` |
-| 8 | Airbag ECU | Crash detection, airbag deployment trigger, seatbelt pretensioner | STM32F407VG | `0x800` |
+| 8 | Airbag ECU | Crash detection, airbag deployment trigger, seatbelt pretensioner | STM32F407VG | `0x100` |
 
 ### 1.3 Telematics ECU Scope
 
