@@ -62,11 +62,11 @@ The Telematics ECU is responsible for the following within the integrated system
 
 - Reading CAN frames from all other ECUs (Engine, ABS, Airbag, BMS, Infotainment) at 500 kbps
 - Forwarding vehicle telemetry to ThingsBoard Cloud via ESP32 (MQTT on port 1883 / TLS 8883)
-- Detecting crash events from Airbag ECU (CAN ID `0x321`) and triggering GSM eCall + cloud alert
+- Detecting crash events from Airbag ECU (CAN ID `0x100`) and triggering GSM eCall + cloud alert
 - Executing remote immobilization commands received from the cloud via ESP32 UART
-- Sending immobilization CAN frame (`0x450`) to Engine ECU with rolling authentication token
+- Sending immobilization CAN frame (`0x105`) to Engine ECU with rolling authentication token
 - Logging all Diagnostic Trouble Codes (DTCs) received from any ECU to W25Q64 SPI flash memory
-- Monitoring battery voltage from BMS ECU (`0x530`) and reporting to cloud dashboard
+- Monitoring battery voltage from BMS ECU (`0x105`) and reporting to cloud dashboard
 - Transmitting JSON-formatted telemetry packets to ThingsBoard Cloud every 5 seconds
 - Managing an Independent Watchdog (IWDG) for system reliability — reset if firmware hangs
 - Updating ThingsBoard Shared Device Attributes to maintain last-known vehicle state even when offline
